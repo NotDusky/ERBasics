@@ -97,6 +97,11 @@ namespace ERBasics {
 		return true;
 	}
 
+	template<typename T, size_t size>
+	void fill_array(T(&arr)[size], const T value) {
+		memset(arr, value, size);
+	}
+
 	template<typename T, size_t sizeA, size_t sizeB>
 	void fill_array(T(&arrA)[sizeA], const T(&arrB)[sizeB], RANDOM_MODE mode) {
 		switch (mode) {
