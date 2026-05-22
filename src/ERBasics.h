@@ -68,6 +68,15 @@ public:
 		FastLED.setBrightness(brightness);
 	}
 
+  LEDStrip(CRGB* leds, uint16_t num_leds, uint16_t brightness = 100)
+    : num_leds(num_leds), data_pin(DATA_PIN) {
+    this->leds = leds;
+    FastLED.addLeds<CHIPSET, DATA_PIN, C_ORDER>(this->leds, num_leds)
+      .setCorrection(TypicalLEDStrip)
+      .setDither(brightness < 255);
+    FastLED.setBrightness(brightness);
+  }  
+
 	void fill(CRGB color) {
 		fill_solid(leds, num_leds, color);
 		FastLED.show();
