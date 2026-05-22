@@ -27,7 +27,6 @@ namespace ERBasics {
 	*/
 	template<typename T, size_t size>
 	void randomize_array(T(&arr)[size]) {
-		randomSeed(analogRead(A0) * millis());
 		// Shuffle the elements of the array.
 		for (size_t i = size; i > 0; i--) {
 			size_t j = random(0, i);
@@ -41,7 +40,6 @@ namespace ERBasics {
 	*/
 	template<typename T, size_t size>
 	void randomize_subarray(T(&arr)[size], size_t range_start = 0, size_t range_end = size) {
-		randomSeed(analogRead(A0) * millis());
 		// Shuffle the elements of the array.
 		for (size_t i = min(range_end, size); i > max(range_start, 0); i--) {
 			size_t j = random(range_start, i);
@@ -106,7 +104,6 @@ namespace ERBasics {
 		case (RANDOM_BD_NO_REPEAT): {
 			int iter_nr = ceil((float)sizeA / sizeB);
 			for (int i = 0; i < iter_nr; i++) {
-				randomSeed(analogRead(A0) + millis());
 				T temp_arr[sizeB] = {};
 				for (int j = 0; j < sizeB; j++) { temp_arr[j] = arrB[j]; }
 				int temp_size = sizeB;
@@ -127,7 +124,6 @@ namespace ERBasics {
 		case (RANDOM_BD): {
 			int iter_r = ceil((float)sizeA / sizeB);
 			for (int i = 0; i < iter_r; i++) {
-				randomSeed(analogRead(A0) + millis());
 				T temp_arr[sizeB] = {};
 				for (int a = 0; a < sizeB; a++) { temp_arr[a] = arrB[a]; }
 				int temp_size = sizeB;
@@ -145,7 +141,6 @@ namespace ERBasics {
 			for (int i = 0; i < sizeA; i++) {
 				int n = 0;
 				do {
-					randomSeed(analogRead(A0) + millis());
 					n = random(0, sizeB);
 				} while (arrB[n] == arrA[i - 1] && i > 0);
 				arrA[i] = arrB[n];
@@ -154,7 +149,6 @@ namespace ERBasics {
 
 		case (RANDOM_NORMAL): {
 			for (int i = 0; i < sizeA; i++) {
-				randomSeed(analogRead(A0) + millis());
 				int n = random(0, sizeB);
 				arrA[i] = arrB[n];
 			}
