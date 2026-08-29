@@ -7,6 +7,10 @@
 #define MAX_COROUTINES 1
 #endif
 
+#ifndef ERB_LOG_LEVEL
+#define ERB_LOG_LEVEL 1
+#endif
+
 #if (MAX_COROUTINES < 1) || (MAX_COROUTINES > 255)
 #error "MAX_COROUTINES must be between 1 and 255"
 #endif
@@ -174,8 +178,9 @@ void _Time<max_coroutines>::setup() {
 
 template <unsigned int max_coroutines>
 void _Time<max_coroutines>::update() {
-  d_time = millis() - prev_millis;
-  prev_millis = millis();
+  uint32_t current_millis = millis();
+  d_time = current_millis - prev_millis;
+  prev_millis = current_millis;
 
   for (int i = 0; i < max_coroutines; i++) {
     // Safety check: ensure function pointer is valid before checking
@@ -198,7 +203,7 @@ int _Time<max_coroutines>::start_coroutine(Callback function, long delay = 0, bo
       return i;
     }
   }
-  #ifdef ERB_LOGGING
+  #if ERB_LOG_LEVEL >= 1
   Serial.println("Couldn't start coroutine. Coroutine limit exceeded.");
   #endif
   return -1;
@@ -219,6 +224,7 @@ void _Time<max_coroutines>::cancel_coroutine(int index) {
   coroutines[index].cancel();
 }
 
-extern _Time<MAX_COROUTINES> Time;
+typedef _Time<MAX_COROUTINES> Time_t;
+extern Time_t Time;
 
 #endif
