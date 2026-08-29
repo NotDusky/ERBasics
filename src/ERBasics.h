@@ -61,7 +61,7 @@ public:
 
   LEDStrip(uint16_t num_leds, uint16_t brightness = 100)
     : num_leds(num_leds), data_pin(DATA_PIN) {
-    leds = (CRGB*)malloc(num_leds);
+    leds = (CRGB*)malloc(num_leds * sizeof(CRGB));
     FastLED.addLeds<CHIPSET, DATA_PIN, C_ORDER>(leds, num_leds)
       .setCorrection(TypicalLEDStrip)
       .setDither(brightness < 255);
