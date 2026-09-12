@@ -56,9 +56,8 @@ public:
     int getQueuedTrack();
 
     /** 
-     * Update the speaker state. 
-     * returns track index if a track finished playing, -1 otherwise.
-     * Time.update() should be called before this function
+     * Update the speaker state. time.update() should be called before this function
+     * @returns track index if a track finished playing, -1 otherwise.
      */
     int update();
 

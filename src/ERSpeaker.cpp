@@ -86,7 +86,7 @@ int ERSpeaker::getQueuedTrack() {
 }
 
 int ERSpeaker::update() {
-    timer += Time.delta_time();
+    timer += time.delta_time();
     if (currentTrackIndex != -1) {
         uint32_t trackDuration = trackList.durations[currentTrackIndex];
         if (millis() - timer >= trackDuration) {
