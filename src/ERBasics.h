@@ -1,6 +1,7 @@
 #ifndef ER_BASICS_H
 #define ER_BASICS_H
 
+#include <Arduino.h>
 #include <ArxTypeTraits.h>
 #include "EREssentialFunctions.h"
 #include "EREnumerations.h"
@@ -54,11 +55,14 @@ public:
 template<template<uint8_t DATA_PIN, EOrder RGB_ORDER> class CHIPSET, uint8_t DATA_PIN, EOrder C_ORDER = RGB>
 class LEDStrip {
 public:
+  /** Pointer to the array of LED objects */
   CRGB* leds;
-  uint16_t num_leds, num_sections;
-  uint16_t leds_per_section;
-  const uint8_t data_pin;
 
+  /** 
+   * Constructor for creating an LED strip with a specified number of LEDs
+   * @param num_leds The number of LEDs in the strip
+   * @param brightness The brightness level of the LEDs (default is 100)
+   */
   LEDStrip(uint16_t num_leds, uint16_t brightness = 100)
     : num_leds(num_leds), data_pin(DATA_PIN) {
     leds = (CRGB*)malloc(num_leds * sizeof(CRGB));
@@ -68,6 +72,12 @@ public:
     FastLED.setBrightness(brightness);
   }
 
+  /** 
+   * Constructor for creating an LED strip with a pre-existing array of LEDs
+   * @param leds A pointer to the array of LED objects
+   * @param num_leds The number of LEDs in the strip
+   * @param brightness The brightness level of the LEDs (default is 100)
+   */
   LEDStrip(CRGB* leds, uint16_t num_leds, uint16_t brightness = 100)
     : num_leds(num_leds), data_pin(DATA_PIN) {
     this->leds = leds;
@@ -77,6 +87,10 @@ public:
     FastLED.setBrightness(brightness);
   }  
 
+  /**
+   * Fills the entire LED strip with a specified color
+   * @param color The color to fill the LED strip with
+   */
   void fill(CRGB color) {
     fill_solid(leds, num_leds, color);
     #ifndef ERB_LED_STRIP_NO_SHOW
@@ -84,6 +98,9 @@ public:
     #endif
   }
 
+  /**
+   * Clears the entire LED strip
+   */
   void clear() {
     fill_solid(leds, num_leds, CRGB::Black);
     #ifndef ERB_LED_STRIP_NO_SHOW
@@ -91,12 +108,21 @@ public:
     #endif
   }
 
+  /**
+   * Sets the number of LEDs per section and calculates the number of sections
+   * @param num The number of LEDs per section
+   */
   void set_leds_per_section(uint16_t num) {
     if (!num) return;
     leds_per_section = num;
     num_sections = num_leds / num + (num_leds % num != 0);
   }
 
+  /**
+   * Sets the color of a specific LED
+   * @param position The position of the LED to set
+   * @param color The color to set the LED to
+   */
   void set_led(uint16_t position, CRGB color) {
     leds[position] = color;
     #ifndef ERB_LED_STRIP_NO_SHOW
@@ -104,6 +130,12 @@ public:
     #endif
   }
 
+  /**
+   * Sets the color of a range of LEDs
+   * @param start The starting position of the range
+   * @param end The ending position of the range
+   * @param color The color to set the LEDs to
+   */
   void set_range(uint16_t start, uint16_t end, CRGB color) {
     fill_solid(leds + start, min(end, num_leds) - start, color);
     #ifndef ERB_LED_STRIP_NO_SHOW
@@ -111,6 +143,11 @@ public:
     #endif
   }
 
+  /**
+   * Sets the color of a specific section of LEDs
+   * @param section The section of LEDs to set
+   * @param color The color to set the LEDs to
+   */
   void set_section(uint16_t section, CRGB color) {
     uint16_t offset = leds_per_section * section;
     uint16_t num = min(leds_per_section, num_leds - offset);
@@ -120,6 +157,12 @@ public:
     #endif
   }
 
+  /**
+   * Sets the color of a range of sections of LEDs
+   * @param start The starting section of the range
+   * @param end The ending section of the range
+   * @param color The color to set the LEDs to
+   */
   void set_section_range(uint16_t start, uint16_t end, CRGB color) {
     uint16_t offset = leds_per_section * start;
     uint16_t num = min(end * leds_per_section, num_leds) - offset;
@@ -128,6 +171,16 @@ public:
     FastLED.show();
     #endif
   }
+
+private:
+  /** Number of LEDs in the strip */
+  uint16_t num_leds;
+  /** Number of sections in the strip */
+  uint16_t num_sections;
+  /** Number of LEDs per section */
+  uint16_t leds_per_section;
+  /** Data pin for the LED strip */
+  const uint8_t data_pin;
 };
 
 class Puzzle {
