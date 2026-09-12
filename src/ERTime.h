@@ -3,16 +3,8 @@
 
 #include "Arduino.h"
 
-#ifndef MAX_COROUTINES
-#define MAX_COROUTINES 1
-#endif
-
 #ifndef ERB_LOG_LEVEL
 #define ERB_LOG_LEVEL 1
-#endif
-
-#if (MAX_COROUTINES < 1) || (MAX_COROUTINES > 255)
-#error "MAX_COROUTINES must be between 1 and 255"
 #endif
 
 /** Type definition for the coroutine callback function */
@@ -24,74 +16,42 @@ typedef void(*Callback) ();
 class Coroutine {
 public:
   /** Default constructor initializes an empty coroutine */
-  Coroutine() : function(nullptr), execute_at(0), delay(0), looped(false) {}
+  Coroutine();
   /** Constructor to initialize a coroutine with a function, delay, and looped flag */
-  Coroutine(Callback func, unsigned long delay, bool looped = false)
-      : function(func), execute_at(millis() + delay), delay(delay), looped(looped) {}
+  Coroutine(Callback func, unsigned long delay, bool looped = false);
 
   /** Set the coroutine's function, delay, and looped flag */
-  void set(Callback func, unsigned long delay, bool is_looped = false) {
-    function = func;
-    this->delay = delay;
-    looped = is_looped;
-    execute_at = millis() + delay;
-  }
+  void set(Callback func, unsigned long delay, bool is_looped = false);
   
   /** Cancel the coroutine */
-  void cancel() {
-    function = nullptr;
-    looped = false;
-    execute_at = 0;
-  }
+  void cancel();
 
   /** Check if the coroutine is ready to be executed */
-  bool check() {
-    return (millis() >= execute_at && function != nullptr);
-  }
+  bool check();
 
   /** Check if the coroutine is empty */
-  bool is_empty() {
-    return (function == nullptr);
-  }
+  bool is_empty();
 
   /** Run the coroutine and reschedule it if it's looped */
-  void run() {
-    if (function) {
-      function();
-    }
-    if (looped) {
-      execute_at += delay;
-    } else {
-      cancel();
-    }
-  }
+  void run();
 
   /** Set the looped flag for the coroutine */
-  void set_looped(bool is_looped) {
-    looped = is_looped;
-  }
+  void set_looped(bool is_looped);
+
   /** Check if the coroutine is set to loop */
-  bool is_looped() {
-    return looped;
-  }
+  bool is_looped();
 
   /** Reschedule the coroutine to run after a new delay */
-  void reschedule(unsigned long delay) {
-    execute_at = millis() + delay;
-  }
+  void reschedule(unsigned long delay);
+
   /** Get the scheduled execution time for the coroutine */
-  unsigned long get_execute_at() {
-    return execute_at;
-  }
+  unsigned long get_execute_at();
 
   /** Set the callback function for the coroutine */
-  void set_callback(Callback func) {
-    function = func;
-  }
+  void set_callback(Callback func);
+
   /** Get the callback function for the coroutine */
-  Callback get_function() {
-    return function;
-  }
+  Callback get_function();
 
 private:
   /** The callback function to be executed when the coroutine runs */
@@ -110,9 +70,13 @@ private:
  * The system allows for starting, canceling, and updating coroutines,
  * as well as tracking the time elapsed between updates.
  */
-template <unsigned int max_coroutines>
-class _Time {
+class ERTime {
 public:
+  ERTime();
+  ERTime(int max_coroutines);
+
+  ~ERTime();
+
   /** Initializes the time system */
   void setup();
 
@@ -141,11 +105,7 @@ public:
    * Cancels all scheduled coroutines, effectively clearing the coroutine list.
    * This can be useful for resetting the time system or stopping all tasks at once.
    */
-  void clear_coroutines() {
-    for (int i = 0; i < max_coroutines; i++) {
-      coroutines[i].cancel();
-    }
-  }
+  void clear_coroutines();
 
   /** 
    * Starts a coroutine with an optional delay before the first execution.
@@ -159,72 +119,16 @@ public:
   int start_coroutine(Callback function, long delay = 0, bool looped = false);
 
 private:
+  /** The maximum number of coroutines that can be managed */
+  const int max_coroutines = 1;
   /** The previous time in milliseconds when update() was called */
   unsigned long prev_millis = 0;
   /** The time in milliseconds since the last update() call */
   unsigned long d_time = 0;
   /** Array of coroutines managed by the time system */
-  Coroutine coroutines[max_coroutines];
+  Coroutine *coroutines;
 };
 
-template <unsigned int max_coroutines>
-void _Time<max_coroutines>::setup() {
-  prev_millis = millis();
-  // Explicitly initialize all coroutines to prevent garbage data
-  for (int i = 0; i < max_coroutines; i++) {
-    coroutines[i].cancel();
-  }
-}
-
-template <unsigned int max_coroutines>
-void _Time<max_coroutines>::update() {
-  uint32_t current_millis = millis();
-  d_time = current_millis - prev_millis;
-  prev_millis = current_millis;
-
-  for (int i = 0; i < max_coroutines; i++) {
-    // Safety check: ensure function pointer is valid before checking
-    if (coroutines[i].get_function() != nullptr && coroutines[i].check()) {
-      coroutines[i].run();
-    }
-  }
-}
-
-template <unsigned int max_coroutines>
-unsigned long _Time<max_coroutines>::delta_time() {
-  return d_time;
-}
-
-template <unsigned int max_coroutines>
-int _Time<max_coroutines>::start_coroutine(Callback function, long delay = 0, bool looped = false) {
-  for (int i = 0; i < max_coroutines; i++) {
-    if (coroutines[i].is_empty()) {
-      coroutines[i].set(function, delay, looped);
-      return i;
-    }
-  }
-  #if ERB_LOG_LEVEL >= 1
-  Serial.println("Couldn't start coroutine. Coroutine limit exceeded.");
-  #endif
-  return -1;
-}
-
-template <unsigned int max_coroutines>
-void _Time<max_coroutines>::cancel_coroutine(Callback function) {
-  for (int i = 0; i < max_coroutines; i++) {
-    if (coroutines[i].get_function() == function) {
-      coroutines[i].cancel();
-      return;
-    }
-  }
-}
-
-template <unsigned int max_coroutines>
-void _Time<max_coroutines>::cancel_coroutine(int index) {
-  coroutines[index].cancel();
-}
-
-typedef _Time<MAX_COROUTINES> Time_t;
-extern Time_t Time;
+extern ERTime time;
 
 #endif
