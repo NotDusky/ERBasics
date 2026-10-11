@@ -18,18 +18,14 @@ bool OneWireRFID::update() {
 };
 
 uint32_t OneWireRFID::check_for_card() {
-    byte addr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    static byte addr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     reader.reset_search();
     if (!reader.search(addr)) return 0;
     
-    // convert address to unsigned long
-    uint32_t card_id = 0;
-    card_id = *(uint32_t*)(addr); // take the last 4 bytes of the address
-    for (uint8_t i = 0; i < 4; i++) {
-        ((uint8_t*)&card_id)[i] = addr[i];
-    }
-
-    return card_id;
+    // Cast address to a pair of 32 bit unsigned integers
+    uint32_t *addr_32 = (uint32_t*)addr;
+    // Return last 4 bytes (32 bits) of address
+    return addr_32[1];
 };
 
 uint32_t OneWireRFID::force_read(bool restart_timer) {
