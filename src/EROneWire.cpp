@@ -24,8 +24,8 @@ uint32_t OneWireRFID::check_for_card() {
     
     // Cast address to a pair of 32 bit unsigned integers
     uint32_t *addr_32 = (uint32_t*)addr;
-    // Return last 4 bytes (32 bits) of address
-    return addr_32[1];
+    // Return first 4 bytes (32 bits) of address
+    return addr_32[0];
 };
 
 uint32_t OneWireRFID::force_read(bool restart_timer) {
